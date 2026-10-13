@@ -3,15 +3,23 @@ package chess.pieces;
 import boardgame.Board;
 import chess.ChessPiece;
 import chess.Color;
+
 //pessa rei
 public class King extends ChessPiece {
 
 	public King(Board board, Color color) {
 		super(board, color);
-		
+
 	}
+
 	@Override
 	public String toString() {
-		return "K";//mudando para to string e retornando o k de rei
+		return "K";// mudando para to string e retornando o k de rei
+	}
+
+	@Override
+	public boolean[][] possibleMovies() {// possivel movimento do rei
+		boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
+		return mat;
 	}
 }

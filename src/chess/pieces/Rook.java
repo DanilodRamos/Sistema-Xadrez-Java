@@ -15,5 +15,9 @@ public class Rook extends ChessPiece {
 		return "R";//convertendo a peça para String
 	}
 	
-
+	@Override
+	public boolean[][] possibleMovies() {// possivel movimento do rei
+		boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
+		return mat;
+	}
 }	
