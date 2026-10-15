@@ -20,19 +20,25 @@ public class Program {
 			try {
 				UI.clearScreen();// limpar a tela toda vez q voltar;
 				UI.printBoard(chessMatch.getPieces());// imprimindo tabuleiro na tela
-				System.out.println();// salto uma linha
-				System.out.println("Source: ");
+				System.out.print("Source: ");
 				ChessPosition source = UI.readChessPosition(sc);
-
+				
+				
+				boolean[][] possibleMoves = chessMatch.possibleMoves(source);
+				UI.clearScreen();//limpar a tela
+				UI.printBoard(chessMatch.getPieces(), possibleMoves);//imprimir o tabuleiro e colocar as cores onde pode mover
 				System.out.println();
-				System.out.println("Target: ");
+				System.out.print("Target: ");
 				ChessPosition target = UI.readChessPosition(sc);
 
 				ChessPiece capturedPiece = chessMatch.performChessMove(source, target);
-			} catch (ChessException e) {
+				
+			} 
+			catch (ChessException e) {
 				System.out.println(e.getMessage());
 				sc.nextLine();
-			} catch (InputMismatchException e) {
+			} 
+			catch (InputMismatchException e) {
 				System.out.println(e.getMessage());
 				sc.nextLine();
 			}

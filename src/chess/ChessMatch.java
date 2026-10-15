@@ -8,23 +8,39 @@ import chess.pieces.Rook;
 
 public class ChessMatch {
 	// regras do jogo de xadrez
-
+	private int turn;
+	private Color currentPlayer;
 	private Board board;
 
 	public ChessMatch() {
 		board = new Board(8, 8);// cria o tabuleiro 8x8
+		turn = 1;
+		currentPlayer = Color.WHITE;
 		initialSetup();// chamando o setup
 	}
+	public int getTurn() {
+		return turn;
+	}
+	public Color getCurrentPlayer() {
+		return currentPlayer;
+	}
 
-	public ChessPiece[][] getPieces() {// retorna uma matriz de peca
+	public ChessPiece[][] getPieces() {
 		ChessPiece[][] mat = new ChessPiece[board.getRows()][board.getColumns()];
-		for (int i = 0; i < board.getRows(); i++) {
-			for (int j = 0; j < board.getColumns(); j++) {
+		for (int i=0; i<board.getRows(); i++) {
+			for (int j=0; j<board.getColumns(); j++) {
 				mat[i][j] = (ChessPiece) board.piece(i, j);
 			}
 		}
 		return mat;
 	}
+	//operaçao  pra ve quais posicoes pode mecher
+	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
+	    Position position = sourcePosition.toPosition();
+	    validateSourcePosition(position);
+	    return board.piece(position).possibleMovies();
+	}
+	
 	//metodo para mover a peca
 	public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
 		Position source = sourcePosition.toPosition();//origem
@@ -32,6 +48,7 @@ public class ChessMatch {
 		validateSourcePosition(source);//validar o posicao de origem
 		validateTargetPosition(source, target);//validar o posicao de destino
 		Piece capturedPiece = makeMove(source, target);
+		nextTurn();
 		return (ChessPiece)capturedPiece;
 	}
 	
@@ -45,6 +62,9 @@ public class ChessMatch {
 		if(!board.thereIsAPiece(position)) {
 			throw new ChessException("There is no piece on source position");
 		}
+		if (currentPlayer != ((ChessPiece)board.piece(position)).getColor()) {
+			throw new ChessException("The chosen piece is not yours");
+		}
 		//testando se tem movimentos possiveis pra peca
 		if(!board.piece(position).isTheAnyPossibleMove()) {
 			throw new ChessException("There is no possible moves for the chosen piece");
@@ -56,8 +76,11 @@ public class ChessMatch {
 			throw new ChessException("The chosen piece can't move to target po");
 		}
 	}
+	private void nextTurn() {
+		turn++;
+		currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
+	}
 	
-
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
 		board.placePiece(piece, new ChessPosition(column, row).toPosition());
 	}// operaçao de colocar peca passando as coordenada do xadrez
