@@ -19,7 +19,8 @@ public class Program {
 		while (true) {
 			try {
 				UI.clearScreen();// limpar a tela toda vez q voltar;
-				UI.printBoard(chessMatch.getPieces());// imprimindo tabuleiro na tela
+				UI.printMatch(chessMatch);// imprimindo tabuleiro na tela
+				System.out.println();
 				System.out.print("Source: ");
 				ChessPosition source = UI.readChessPosition(sc);
 				

@@ -7,7 +7,7 @@ import chess.pieces.King;
 import chess.pieces.Rook;
 
 public class ChessMatch {
-	// regras do jogo de xadrez
+	// regras do jogo de xadrez um jogador de cada
 	private int turn;
 	private Color currentPlayer;
 	private Board board;
@@ -15,7 +15,7 @@ public class ChessMatch {
 	public ChessMatch() {
 		board = new Board(8, 8);// cria o tabuleiro 8x8
 		turn = 1;
-		currentPlayer = Color.WHITE;
+		currentPlayer = Color.WHITE;//começa com as branca
 		initialSetup();// chamando o setup
 	}
 	public int getTurn() {
@@ -48,7 +48,7 @@ public class ChessMatch {
 		validateSourcePosition(source);//validar o posicao de origem
 		validateTargetPosition(source, target);//validar o posicao de destino
 		Piece capturedPiece = makeMove(source, target);
-		nextTurn();
+		nextTurn();//trocar o turno
 		return (ChessPiece)capturedPiece;
 	}
 	
@@ -61,7 +61,7 @@ public class ChessMatch {
 	private void validateSourcePosition(Position position) {
 		if(!board.thereIsAPiece(position)) {
 			throw new ChessException("There is no piece on source position");
-		}
+		}//se jogador for diferente com downcast
 		if (currentPlayer != ((ChessPiece)board.piece(position)).getColor()) {
 			throw new ChessException("The chosen piece is not yours");
 		}
@@ -75,7 +75,7 @@ public class ChessMatch {
 		if (!board.piece(source).possibleMove(target)) {
 			throw new ChessException("The chosen piece can't move to target po");
 		}
-	}
+	}//metodo para troca turno e jogador
 	private void nextTurn() {
 		turn++;
 		currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
