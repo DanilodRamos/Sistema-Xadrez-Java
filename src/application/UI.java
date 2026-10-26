@@ -55,12 +55,17 @@ public class UI {
 			throw new InputMismatchException("Error reading ChessPosition.Valid values are from a1 to h8");
 		}
 	}
+	
 	public static void printMatch(ChessMatch chessMatch, List<ChessPiece> captured) {//monstro o tabuleiro normal
 		printBoard(chessMatch.getPieces());
 		System.out.println();
 		printCapturedPieces(captured);
+		System.out.println();
 		System.out.println("Turn : " + chessMatch.getTurn());//turno tal
 		System.out.println("Waiting player: " + chessMatch.getCurrentPlayer());//aguardando jogador tal
+		if(chessMatch.getCheck()) {
+			System.out.println("XXXXXXCHECKXXXXXX!");
+		}
 	}
 
 	// metodo

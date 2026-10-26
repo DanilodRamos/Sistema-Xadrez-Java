@@ -17,6 +17,10 @@ public abstract class ChessPiece extends Piece {// subclasse de peça
 	public Color getColor() {
 		return color; // nao q modifica a cor tira o set
 	}
+	//logica de check
+	public ChessPosition getChessPosition() {
+		return ChessPosition.fromPosition(position);
+	}
 
 	// assecivel mesmo pacote e subclasse
 	protected boolean isThereOpponentPiece(Position position) {
