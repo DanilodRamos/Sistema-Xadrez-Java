@@ -24,6 +24,9 @@ public class ChessMatch {
 
     // Indica se o rei está em xeque.
     private boolean check;
+    
+    //cheque mate;
+    private boolean checkMate;
 
     // Lista de todas as peças que estão no tabuleiro.
     private List<Piece> piecesOnTheBoard = new ArrayList<>();
@@ -58,6 +61,10 @@ public class ChessMatch {
     // Informa se existe xeque.
     public boolean getCheck() {
         return check;
+    }
+    // Informa se existe xequeMate.
+    public boolean getCheckMate() {
+    	return checkMate;
     }
 
     // Retorna uma matriz contendo as peças do tabuleiro.
@@ -118,10 +125,15 @@ public class ChessMatch {
         }
 
         // Verifica se o adversário ficou em xeque.
-        check = testCheck(opponent(currentPlayer));
-
+        check = (testCheck(opponent(currentPlayer))) ? true : false;
+        if(testCheckMate(opponent(currentPlayer))) {
+        	checkMate = true;
+        	
+        }
         // Passa a vez para o próximo jogador.
-        nextTurn();
+        else {
+        	nextTurn();
+        }
 
         // Retorna a peça capturada, se houver.
         return (ChessPiece) capturedPiece;
@@ -300,6 +312,97 @@ public class ChessMatch {
         // Nenhuma peça adversária ameaça o rei.
         return false;
     }
+    
+
+ // Método responsável por verificar se o jogador está em xeque-mate.
+ // Recebe a cor do jogador que está sendo analisado.
+ // Retorna true se for xeque-mate e false se não for.
+ private boolean testCheckMate(Color color) {
+
+     // Primeiro verifica se o jogador está em xeque.
+     // Se NÃO estiver em xeque, não pode ser xeque-mate.
+     if (!testCheck(color)) {
+
+         // Retorna false porque não existe xeque-mate.
+         return false;
+     }
+
+     // Cria uma lista contendo as peças do adversário.
+     // piecesOnTheBoard.stream() percorre todas as peças do tabuleiro.
+     List<Piece> list = piecesOnTheBoard.stream()
+
+         // filter() filtra somente as peças que pertencem ao adversário.
+         // opponent(color) retorna a cor contrária à do jogador analisado.
+    		 .filter(x -> ((ChessPiece) x).getColor() == color)
+
+         // collect() reúne as peças filtradas em uma nova lista.
+         // toList() transforma o resultado em uma lista.
+         .collect(Collectors.toList());
+
+     // Percorre uma por uma as peças do adversário.
+     for (Piece p : list) {
+
+         // Cria uma matriz de posições possíveis para a peça atual.
+         // true significa que a peça pode tentar se movimentar naquela posição.
+         boolean[][] mat = p.possibleMovies();
+
+         // Percorre todas as linhas do tabuleiro.
+         // board.getRows() informa quantas linhas existem.
+         for (int i = 0; i < board.getRows(); i++) {
+
+             // Percorre todas as colunas do tabuleiro.
+             // board.getColumns() informa quantas colunas existem.
+             for (int j = 0; j < board.getColumns(); j++) {
+
+                 // Verifica se a posição atual é um movimento possível.
+                 // Se for true, significa que podemos testar essa jogada.
+                 if (mat[i][j]) {
+
+                     // Obtém a posição atual da peça no tabuleiro.
+                     // getChessPosition() retorna a posição no padrão do xadrez.
+                     // toPosition() converte para as coordenadas da matriz.
+                     Position source = ((ChessPiece) p)
+                             .getChessPosition().toPosition();
+
+                     // Cria a posição de destino da jogada.
+                     // i representa a linha e j representa a coluna.
+                     Position target = new Position(i, j);
+
+                     // Executa temporariamente o movimento da peça.
+                     // Guarda a peça capturada, caso exista.
+                     // Precisamos guardar essa peça para desfazer a jogada depois.
+                     Piece capturedPiece = makeMove(source, target);
+
+                     // Depois da jogada, verifica se o jogador analisado
+                     // continua em xeque.
+                     boolean testCheck = testCheck(color);
+
+                     // Desfaz o movimento temporário.
+                     // Retorna a peça para sua posição original.
+                     // Também devolve ao tabuleiro a peça que foi capturada.
+                     undoMove(source, target, capturedPiece);
+
+                     // Verifica se a jogada conseguiu tirar o jogador do xeque.
+                     // Se NÃO estiver mais em xeque, existe uma saída.
+                     if (!testCheck) {
+
+                         // Portanto, não é xeque-mate.
+                         // Basta uma jogada válida para escapar do xeque.
+                         return false;
+                     }
+                 }
+             }
+         }
+     }
+
+     // Se chegou até aqui, significa que:
+     // 1. O jogador estava em xeque.
+     // 2. Todas as jogadas possíveis foram testadas.
+     // 3. Nenhuma jogada conseguiu tirar o jogador do xeque.
+     // Portanto, é xeque-mate!
+     return true;
+ }
+
 
     // =====================================
     // COLOCAR PEÇAS NO TABULEIRO
@@ -322,23 +425,12 @@ public class ChessMatch {
     private void initialSetup() {
 
         // PEÇAS BRANCAS
-        placeNewPiece('c', 1, new Rook(board, Color.WHITE));
-        placeNewPiece('c', 2, new Rook(board, Color.WHITE));
-        placeNewPiece('d', 2, new Rook(board, Color.WHITE));
-        placeNewPiece('e', 2, new Rook(board, Color.WHITE));
-        placeNewPiece('e', 1, new Rook(board, Color.WHITE));
-
-        // Rei branco.
-        placeNewPiece('d', 1, new King(board, Color.WHITE));
-
-        // PEÇAS PRETAS
-        placeNewPiece('c', 7, new Rook(board, Color.BLACK));
-        placeNewPiece('c', 8, new Rook(board, Color.BLACK));
-        placeNewPiece('d', 7, new Rook(board, Color.BLACK));
-        placeNewPiece('e', 7, new Rook(board, Color.BLACK));
-        placeNewPiece('e', 8, new Rook(board, Color.BLACK));
-
-        // Rei preto.
-        placeNewPiece('d', 8, new King(board, Color.BLACK));
+        placeNewPiece('h', 7, new Rook(board, Color.WHITE));
+        placeNewPiece('d', 1, new Rook(board, Color.WHITE));
+        placeNewPiece('e', 1, new King(board, Color.WHITE));
+       
+        placeNewPiece('b', 8, new Rook(board, Color.BLACK));
+        placeNewPiece('a', 8, new King(board, Color.BLACK));
+       
     }
 }

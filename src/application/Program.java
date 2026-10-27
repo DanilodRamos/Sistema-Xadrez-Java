@@ -20,7 +20,7 @@ public class Program {
 		//declarando lista de peças na partida
 		List<ChessPiece> captured = new ArrayList<>();
 
-		while (true) {
+		while (!chessMatch.getCheckMate()) {
 			try {
 				UI.clearScreen();// limpar a tela toda vez q voltar;
 				UI.printMatch(chessMatch, captured);// imprimindo tabuleiro na tela
@@ -51,7 +51,8 @@ public class Program {
 				sc.nextLine();
 			}
 		}
-
+		UI.clearScreen();
+		UI.printMatch(chessMatch, captured);
 	}
 
 }
