@@ -1,17 +1,26 @@
-package chess;
-
+package chess;// Define que esta classe pertence ao pacote chess.
+//Importa a classe Board, que representa o tabuleiro.
 import boardgame.Board;
 import boardgame.Piece;
 import boardgame.Position;
 import chess.pieces.King;
 import chess.pieces.Rook;
-
+//Importa a classe Piece, que é a classe pai de ChessPiece.
+//Classe abstrata: serve como modelo para as peças do xadrez.
+//Herda os atributos e métodos da classe Piece.
 public abstract class ChessPiece extends Piece {// subclasse de peça
-	private Color color;
-	private int moveCount;
-
+	private Color color;    // Guarda a cor da peça (WHITE ou BLACK).
+	private int moveCount; 
+    // Guarda quantos movimentos a peça realizou.
+    // Construtor da classe ChessPiece.
+    // Recebe o tabuleiro e a cor da peça.
 	public ChessPiece(Board board, Color color) {
+		  // Chama o construtor da classe pai (Piece).
+        // Passa o tabuleiro para a classe herdada.
 		super(board);
+		// Guarda a cor recebida dentro do atributo color.
+        // this.color representa o atributo da própria classe.
+        // color representa o parâmetro recebido pelo construtor.
 		this.color = color;
 	}
 
