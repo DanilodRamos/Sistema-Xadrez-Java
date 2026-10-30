@@ -13,424 +13,422 @@ import chess.pieces.Rook;
 
 public class ChessMatch {
 
-    // Número do turno da partida.
-    private int turn;
+	// Número do turno da partida.
+	private int turn;
 
-    // Jogador que está jogando atualmente.
-    private Color currentPlayer;
+	// Jogador que está jogando atualmente.
+	private Color currentPlayer;
 
-    // Tabuleiro de xadrez.
-    private Board board;
+	// Tabuleiro de xadrez.
+	private Board board;
 
-    // Indica se o rei está em xeque.
-    private boolean check;
-    
-    //cheque mate;
-    private boolean checkMate;
+	// Indica se o rei está em xeque.
+	private boolean check;
 
-    // Lista de todas as peças que estão no tabuleiro.
-    private List<Piece> piecesOnTheBoard = new ArrayList<>();
+	// cheque mate;
+	private boolean checkMate;
 
-    // Lista das peças que foram capturadas.
-    private List<Piece> capturedPieces = new ArrayList<>();
+	// Lista de todas as peças que estão no tabuleiro.
+	private List<Piece> piecesOnTheBoard = new ArrayList<>();
 
-    // Construtor da partida.
-    public ChessMatch() {
+	// Lista das peças que foram capturadas.
+	private List<Piece> capturedPieces = new ArrayList<>();
 
-        board = new Board(8, 8); // Cria um tabuleiro de 8 linhas e 8 colunas.
+	// Construtor da partida.
+	public ChessMatch() {
 
-        turn = 1; // A partida começa no primeiro turno.
+		board = new Board(8, 8); // Cria um tabuleiro de 8 linhas e 8 colunas.
 
-        currentPlayer = Color.WHITE; // As brancas começam jogando.
+		turn = 1; // A partida começa no primeiro turno.
 
-        check = false; // Inicialmente ninguém está em xeque.
+		currentPlayer = Color.WHITE; // As brancas começam jogando.
 
-        initialSetup(); // Coloca as peças no tabuleiro.
-    }
+		check = false; // Inicialmente ninguém está em xeque.
 
-    // Retorna o número do turno.
-    public int getTurn() {
-        return turn;
-    }
+		initialSetup(); // Coloca as peças no tabuleiro.
+	}
 
-    // Retorna o jogador atual.
-    public Color getCurrentPlayer() {
-        return currentPlayer;
-    }
+	// Retorna o número do turno.
+	public int getTurn() {
+		return turn;
+	}
 
-    // Informa se existe xeque.
-    public boolean getCheck() {
-        return check;
-    }
-    // Informa se existe xequeMate.
-    public boolean getCheckMate() {
-    	return checkMate;
-    }
+	// Retorna o jogador atual.
+	public Color getCurrentPlayer() {
+		return currentPlayer;
+	}
 
-    // Retorna uma matriz contendo as peças do tabuleiro.
-    public ChessPiece[][] getPieces() {
+	// Informa se existe xeque.
+	public boolean getCheck() {
+		return check;
+	}
 
-        ChessPiece[][] mat = new ChessPiece[board.getRows()][board.getColumns()];
+	// Informa se existe xequeMate.
+	public boolean getCheckMate() {
+		return checkMate;
+	}
 
-        // Percorre todas as linhas e colunas.
-        for (int i = 0; i < board.getRows(); i++) {
+	// Retorna uma matriz contendo as peças do tabuleiro.
+	public ChessPiece[][] getPieces() {
 
-            for (int j = 0; j < board.getColumns(); j++) {
+		ChessPiece[][] mat = new ChessPiece[board.getRows()][board.getColumns()];
 
-                // Obtém a peça daquela posição.
-                // O cast converte Piece para ChessPiece.
-                mat[i][j] = (ChessPiece) board.piece(i, j);
-            }
-        }
+		// Percorre todas as linhas e colunas.
+		for (int i = 0; i < board.getRows(); i++) {
 
-        return mat;
-    }
+			for (int j = 0; j < board.getColumns(); j++) {
 
-    // Verifica os movimentos possíveis de uma peça.
-    public boolean[][] possibleMoves(ChessPosition sourcePosition) {
+				// Obtém a peça daquela posição.
+				// O cast converte Piece para ChessPiece.
+				mat[i][j] = (ChessPiece) board.piece(i, j);
+			}
+		}
 
-        Position position = sourcePosition.toPosition();
+		return mat;
+	}
 
-        // Verifica se existe uma peça válida na origem.
-        validateSourcePosition(position);
+	// Verifica os movimentos possíveis de uma peça.
+	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
 
-        // Retorna a matriz de movimentos possíveis da peça.
-        return board.piece(position).possibleMovies();
-    }
+		Position position = sourcePosition.toPosition();
 
-    // Executa uma jogada completa.
-    public ChessPiece performChessMove(
-            ChessPosition sourcePosition,
-            ChessPosition targetPosition) {
+		// Verifica se existe uma peça válida na origem.
+		validateSourcePosition(position);
 
-        Position source = sourcePosition.toPosition();
-        Position target = targetPosition.toPosition();
+		// Retorna a matriz de movimentos possíveis da peça.
+		return board.piece(position).possibleMovies();
+	}
 
-        // Verifica se a posição de origem é válida.
-        validateSourcePosition(source);
+	// Executa uma jogada completa.
+	public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
 
-        // Verifica se a peça pode ir para o destino.
-        validateTargetPosition(source, target);
+		Position source = sourcePosition.toPosition();
+		Position target = targetPosition.toPosition();
 
-        // Executa o movimento e guarda uma possível peça capturada.
-        Piece capturedPiece = makeMove(source, target);
+		// Verifica se a posição de origem é válida.
+		validateSourcePosition(source);
 
-        // Verifica se o jogador deixou o próprio rei em xeque.
-        if (testCheck(currentPlayer)) {
+		// Verifica se a peça pode ir para o destino.
+		validateTargetPosition(source, target);
 
-            // Se deixou o próprio rei em xeque, desfaz a jogada.
-            undoMove(source, target, capturedPiece);
+		// Executa o movimento e guarda uma possível peça capturada.
+		Piece capturedPiece = makeMove(source, target);
 
-            throw new ChessException("You can't put yourself in check");
-        }
+		// Verifica se o jogador deixou o próprio rei em xeque.
+		if (testCheck(currentPlayer)) {
 
-        // Verifica se o adversário ficou em xeque.
-        check = (testCheck(opponent(currentPlayer))) ? true : false;
-        if(testCheckMate(opponent(currentPlayer))) {
-        	checkMate = true;
-        	
-        }
-        // Passa a vez para o próximo jogador.
-        else {
-        	nextTurn();
-        }
+			// Se deixou o próprio rei em xeque, desfaz a jogada.
+			undoMove(source, target, capturedPiece);
 
-        // Retorna a peça capturada, se houver.
-        return (ChessPiece) capturedPiece;
-    }
+			throw new ChessException("You can't put yourself in check");
+		}
 
-    // =====================================
-    // FAZER MOVIMENTO
-    // =====================================
+		// Verifica se o adversário ficou em xeque.
+		check = (testCheck(opponent(currentPlayer))) ? true : false;
+		if (testCheckMate(opponent(currentPlayer))) {
+			checkMate = true;
 
-    private Piece makeMove(Position source, Position target) {
+		}
+		// Passa a vez para o próximo jogador.
+		else {
+			nextTurn();
+		}
 
-        // Remove a peça da posição de origem.
-        Piece p = board.removePiece(source);
+		// Retorna a peça capturada, se houver.
+		return (ChessPiece) capturedPiece;
+	}
 
-        // Remove a peça que estiver no destino, se existir.
-        Piece capturedPiece = board.removePiece(target);
+	// =====================================
+	// FAZER MOVIMENTO
+	// =====================================
 
-        // Coloca a peça movimentada na posição de destino.
-        board.placePiece(p, target);
+	private Piece makeMove(Position source, Position target) {
 
-        // Verifica se aconteceu uma captura.
-        if (capturedPiece != null) {
+		// Remove a peça da posição de origem.
+		ChessPiece p = (ChessPiece) board.removePiece(source);
+		p.increaseMoveCount();
+		// Remove a peça que estiver no destino, se existir.
+		Piece capturedPiece = board.removePiece(target);
 
-            // Retira a peça capturada da lista do tabuleiro.
-            piecesOnTheBoard.remove(capturedPiece);
+		// Coloca a peça movimentada na posição de destino.
+		board.placePiece(p, target);
 
-            // Adiciona a peça à lista de capturadas.
-            capturedPieces.add(capturedPiece);
-        }
+		// Verifica se aconteceu uma captura.
+		if (capturedPiece != null) {
 
-        return capturedPiece;
-    }
+			// Retira a peça capturada da lista do tabuleiro.
+			piecesOnTheBoard.remove(capturedPiece);
 
-    // =====================================
-    // DESFAZER MOVIMENTO
-    // =====================================
+			// Adiciona a peça à lista de capturadas.
+			capturedPieces.add(capturedPiece);
+		}
 
-    private void undoMove(Position source, Position target, Piece capturedPiece) {
+		return capturedPiece;
+	}
 
-        // Remove a peça da posição de destino.
-        Piece p = board.removePiece(target);
+	// =====================================
+	// DESFAZER MOVIMENTO
+	// =====================================
 
-        // CORREÇÃO:
-        // Devolve a peça para sua posição original (source).
-        // Antes estava sendo colocada novamente em target.
-        board.placePiece(p, source);
+	private void undoMove(Position source, Position target, Piece capturedPiece) {
 
-        // Se uma peça foi capturada, precisamos recuperá-la.
-        if (capturedPiece != null) {
+		// Remove a peça que está na posição de destino (target) do tabuleiro.
+		// Ou seja, retira a peça que será capturada durante a jogada.
+		ChessPiece p = (ChessPiece) board.removePiece(target);
 
-            // Devolve a peça capturada para o tabuleiro.
-            board.placePiece(capturedPiece, target);
+		// Diminui em 1 a quantidade de movimentos da peça capturada.
+		// Isso é necessário porque a peça está sendo retirada do tabuleiro
+		// e não deve mais ser considerada como uma peça em jogo.
+		p.decreaseMoveCount();
 
-            // Remove a peça da lista de capturadas.
-            capturedPieces.remove(capturedPiece);
+		// CORREÇÃO:
+		// Devolve a peça para sua posição original (source).
+		// Antes estava sendo colocada novamente em target.
+		board.placePiece(p, source);
 
-            // Adiciona novamente à lista de peças do tabuleiro.
-            piecesOnTheBoard.add(capturedPiece);
-        }
-    }
+		// Se uma peça foi capturada, precisamos recuperá-la.
+		if (capturedPiece != null) {
 
-    // =====================================
-    // VALIDAR POSIÇÃO DE ORIGEM
-    // =====================================
+			// Devolve a peça capturada para o tabuleiro.
+			board.placePiece(capturedPiece, target);
 
-    private void validateSourcePosition(Position position) {
+			// Remove a peça da lista de capturadas.
+			capturedPieces.remove(capturedPiece);
 
-        // Verifica se existe alguma peça na posição escolhida.
-        if (!board.thereIsAPiece(position)) {
-            throw new ChessException("There is no piece on source position");
-        }
+			// Adiciona novamente à lista de peças do tabuleiro.
+			piecesOnTheBoard.add(capturedPiece);
+		}
+	}
 
-        // Verifica se a peça pertence ao jogador atual.
-        if (currentPlayer != ((ChessPiece) board.piece(position)).getColor()) {
-            throw new ChessException("The chosen piece is not yours");
-        }
+	// =====================================
+	// VALIDAR POSIÇÃO DE ORIGEM
+	// =====================================
 
-        // Verifica se a peça possui algum movimento possível.
-        if (!board.piece(position).isTheAnyPossibleMove()) {
-            throw new ChessException("There is no possible moves for the chosen piece");
-        }
-    }
+	private void validateSourcePosition(Position position) {
 
-    // =====================================
-    // VALIDAR POSIÇÃO DE DESTINO
-    // =====================================
+		// Verifica se existe alguma peça na posição escolhida.
+		if (!board.thereIsAPiece(position)) {
+			throw new ChessException("There is no piece on source position");
+		}
 
-    private void validateTargetPosition(Position source, Position target) {
+		// Verifica se a peça pertence ao jogador atual.
+		if (currentPlayer != ((ChessPiece) board.piece(position)).getColor()) {
+			throw new ChessException("The chosen piece is not yours");
+		}
 
-        // Verifica se o movimento escolhido é permitido.
-        if (!board.piece(source).possibleMove(target)) {
-            throw new ChessException("The chosen piece can't move to target position");
-        }
-    }
+		// Verifica se a peça possui algum movimento possível.
+		if (!board.piece(position).isTheAnyPossibleMove()) {
+			throw new ChessException("There is no possible moves for the chosen piece");
+		}
+	}
 
-    // =====================================
-    // TROCAR TURNO
-    // =====================================
+	// =====================================
+	// VALIDAR POSIÇÃO DE DESTINO
+	// =====================================
 
-    private void nextTurn() {
+	private void validateTargetPosition(Position source, Position target) {
 
-        // Incrementa o número do turno.
-        turn++;
+		// Verifica se o movimento escolhido é permitido.
+		if (!board.piece(source).possibleMove(target)) {
+			throw new ChessException("The chosen piece can't move to target position");
+		}
+	}
 
-        // Alterna entre jogador branco e preto.
-        currentPlayer = (currentPlayer == Color.WHITE)
-                ? Color.BLACK
-                : Color.WHITE;
-    }
+	// =====================================
+	// TROCAR TURNO
+	// =====================================
 
-    // =====================================
-    // IDENTIFICAR O ADVERSÁRIO
-    // =====================================
+	private void nextTurn() {
 
-    private Color opponent(Color color) {
+		// Incrementa o número do turno.
+		turn++;
 
-        // Se for branco, retorna preto.
-        // Se for preto, retorna branco.
-        return (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
-    }
+		// Alterna entre jogador branco e preto.
+		currentPlayer = (currentPlayer == Color.WHITE) ? Color.BLACK : Color.WHITE;
+	}
 
-    // =====================================
-    // LOCALIZAR O REI
-    // =====================================
+	// =====================================
+	// IDENTIFICAR O ADVERSÁRIO
+	// =====================================
 
-    private ChessPiece king(Color color) {
+	private Color opponent(Color color) {
 
-        // Filtra as peças que pertencem à cor informada.
-        List<Piece> list = piecesOnTheBoard.stream()
-                .filter(x -> ((ChessPiece) x).getColor() == color)
-                .collect(Collectors.toList());
+		// Se for branco, retorna preto.
+		// Se for preto, retorna branco.
+		return (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
+	}
 
-        // Percorre a lista procurando uma peça da classe King.
-        for (Piece p : list) {
+	// =====================================
+	// LOCALIZAR O REI
+	// =====================================
 
-            if (p instanceof King) {
+	private ChessPiece king(Color color) {
 
-                // Retorna o rei encontrado.
-                return (ChessPiece) p;
-            }
-        }
+		// Filtra as peças que pertencem à cor informada.
+		List<Piece> list = piecesOnTheBoard.stream().filter(x -> ((ChessPiece) x).getColor() == color)
+				.collect(Collectors.toList());
 
-        // Se não encontrar o rei, lança uma exceção.
-        throw new IllegalStateException("There is no " + color + " King on the board");
-    }
+		// Percorre a lista procurando uma peça da classe King.
+		for (Piece p : list) {
 
-    // =====================================
-    // TESTAR XEQUE
-    // =====================================
+			if (p instanceof King) {
 
-    private boolean testCheck(Color color) {
+				// Retorna o rei encontrado.
+				return (ChessPiece) p;
+			}
+		}
 
-        // Localiza o rei da cor recebida.
-        // Obtém sua posição no tabuleiro.
-        Position kingPosition = king(color).getChessPosition().toPosition();
+		// Se não encontrar o rei, lança uma exceção.
+		throw new IllegalStateException("There is no " + color + " King on the board");
+	}
 
-        // Cria uma lista contendo somente as peças adversárias.
-        List<Piece> opponentPieces = piecesOnTheBoard.stream()
-                .filter(x -> ((ChessPiece) x).getColor() == opponent(color))
-                .collect(Collectors.toList());
+	// =====================================
+	// TESTAR XEQUE
+	// =====================================
 
-        // Percorre todas as peças do adversário.
-        for (Piece p : opponentPieces) {
+	private boolean testCheck(Color color) {
 
-            // Obtém os movimentos possíveis da peça adversária.
-            boolean[][] mat = p.possibleMovies();
+		// Localiza o rei da cor recebida.
+		// Obtém sua posição no tabuleiro.
+		Position kingPosition = king(color).getChessPosition().toPosition();
 
-            // Verifica se algum movimento alcança a posição do rei.
-            if (mat[kingPosition.getRow()][kingPosition.getColumn()]) {
+		// Cria uma lista contendo somente as peças adversárias.
+		List<Piece> opponentPieces = piecesOnTheBoard.stream()
+				.filter(x -> ((ChessPiece) x).getColor() == opponent(color)).collect(Collectors.toList());
 
-                // Se alcançar, significa que o rei está em xeque.
-                return true;
-            }
-        }
+		// Percorre todas as peças do adversário.
+		for (Piece p : opponentPieces) {
 
-        // Nenhuma peça adversária ameaça o rei.
-        return false;
-    }
-    
+			// Obtém os movimentos possíveis da peça adversária.
+			boolean[][] mat = p.possibleMovies();
 
- // Método responsável por verificar se o jogador está em xeque-mate.
- // Recebe a cor do jogador que está sendo analisado.
- // Retorna true se for xeque-mate e false se não for.
- private boolean testCheckMate(Color color) {
+			// Verifica se algum movimento alcança a posição do rei.
+			if (mat[kingPosition.getRow()][kingPosition.getColumn()]) {
 
-     // Primeiro verifica se o jogador está em xeque.
-     // Se NÃO estiver em xeque, não pode ser xeque-mate.
-     if (!testCheck(color)) {
+				// Se alcançar, significa que o rei está em xeque.
+				return true;
+			}
+		}
 
-         // Retorna false porque não existe xeque-mate.
-         return false;
-     }
+		// Nenhuma peça adversária ameaça o rei.
+		return false;
+	}
 
-     // Cria uma lista contendo as peças do adversário.
-     // piecesOnTheBoard.stream() percorre todas as peças do tabuleiro.
-     List<Piece> list = piecesOnTheBoard.stream()
+	// Método responsável por verificar se o jogador está em xeque-mate.
+	// Recebe a cor do jogador que está sendo analisado.
+	// Retorna true se for xeque-mate e false se não for.
+	private boolean testCheckMate(Color color) {
 
-         // filter() filtra somente as peças que pertencem ao adversário.
-         // opponent(color) retorna a cor contrária à do jogador analisado.
-    		 .filter(x -> ((ChessPiece) x).getColor() == color)
+		// Primeiro verifica se o jogador está em xeque.
+		// Se NÃO estiver em xeque, não pode ser xeque-mate.
+		if (!testCheck(color)) {
 
-         // collect() reúne as peças filtradas em uma nova lista.
-         // toList() transforma o resultado em uma lista.
-         .collect(Collectors.toList());
+			// Retorna false porque não existe xeque-mate.
+			return false;
+		}
 
-     // Percorre uma por uma as peças do adversário.
-     for (Piece p : list) {
+		// Cria uma lista contendo as peças do adversário.
+		// piecesOnTheBoard.stream() percorre todas as peças do tabuleiro.
+		List<Piece> list = piecesOnTheBoard.stream()
 
-         // Cria uma matriz de posições possíveis para a peça atual.
-         // true significa que a peça pode tentar se movimentar naquela posição.
-         boolean[][] mat = p.possibleMovies();
+				// filter() filtra somente as peças que pertencem ao adversário.
+				// opponent(color) retorna a cor contrária à do jogador analisado.
+				.filter(x -> ((ChessPiece) x).getColor() == color)
 
-         // Percorre todas as linhas do tabuleiro.
-         // board.getRows() informa quantas linhas existem.
-         for (int i = 0; i < board.getRows(); i++) {
+				// collect() reúne as peças filtradas em uma nova lista.
+				// toList() transforma o resultado em uma lista.
+				.collect(Collectors.toList());
 
-             // Percorre todas as colunas do tabuleiro.
-             // board.getColumns() informa quantas colunas existem.
-             for (int j = 0; j < board.getColumns(); j++) {
+		// Percorre uma por uma as peças do adversário.
+		for (Piece p : list) {
 
-                 // Verifica se a posição atual é um movimento possível.
-                 // Se for true, significa que podemos testar essa jogada.
-                 if (mat[i][j]) {
+			// Cria uma matriz de posições possíveis para a peça atual.
+			// true significa que a peça pode tentar se movimentar naquela posição.
+			boolean[][] mat = p.possibleMovies();
 
-                     // Obtém a posição atual da peça no tabuleiro.
-                     // getChessPosition() retorna a posição no padrão do xadrez.
-                     // toPosition() converte para as coordenadas da matriz.
-                     Position source = ((ChessPiece) p)
-                             .getChessPosition().toPosition();
+			// Percorre todas as linhas do tabuleiro.
+			// board.getRows() informa quantas linhas existem.
+			for (int i = 0; i < board.getRows(); i++) {
 
-                     // Cria a posição de destino da jogada.
-                     // i representa a linha e j representa a coluna.
-                     Position target = new Position(i, j);
+				// Percorre todas as colunas do tabuleiro.
+				// board.getColumns() informa quantas colunas existem.
+				for (int j = 0; j < board.getColumns(); j++) {
 
-                     // Executa temporariamente o movimento da peça.
-                     // Guarda a peça capturada, caso exista.
-                     // Precisamos guardar essa peça para desfazer a jogada depois.
-                     Piece capturedPiece = makeMove(source, target);
+					// Verifica se a posição atual é um movimento possível.
+					// Se for true, significa que podemos testar essa jogada.
+					if (mat[i][j]) {
 
-                     // Depois da jogada, verifica se o jogador analisado
-                     // continua em xeque.
-                     boolean testCheck = testCheck(color);
+						// Obtém a posição atual da peça no tabuleiro.
+						// getChessPosition() retorna a posição no padrão do xadrez.
+						// toPosition() converte para as coordenadas da matriz.
+						Position source = ((ChessPiece) p).getChessPosition().toPosition();
 
-                     // Desfaz o movimento temporário.
-                     // Retorna a peça para sua posição original.
-                     // Também devolve ao tabuleiro a peça que foi capturada.
-                     undoMove(source, target, capturedPiece);
+						// Cria a posição de destino da jogada.
+						// i representa a linha e j representa a coluna.
+						Position target = new Position(i, j);
 
-                     // Verifica se a jogada conseguiu tirar o jogador do xeque.
-                     // Se NÃO estiver mais em xeque, existe uma saída.
-                     if (!testCheck) {
+						// Executa temporariamente o movimento da peça.
+						// Guarda a peça capturada, caso exista.
+						// Precisamos guardar essa peça para desfazer a jogada depois.
+						Piece capturedPiece = makeMove(source, target);
 
-                         // Portanto, não é xeque-mate.
-                         // Basta uma jogada válida para escapar do xeque.
-                         return false;
-                     }
-                 }
-             }
-         }
-     }
+						// Depois da jogada, verifica se o jogador analisado
+						// continua em xeque.
+						boolean testCheck = testCheck(color);
 
-     // Se chegou até aqui, significa que:
-     // 1. O jogador estava em xeque.
-     // 2. Todas as jogadas possíveis foram testadas.
-     // 3. Nenhuma jogada conseguiu tirar o jogador do xeque.
-     // Portanto, é xeque-mate!
-     return true;
- }
+						// Desfaz o movimento temporário.
+						// Retorna a peça para sua posição original.
+						// Também devolve ao tabuleiro a peça que foi capturada.
+						undoMove(source, target, capturedPiece);
 
+						// Verifica se a jogada conseguiu tirar o jogador do xeque.
+						// Se NÃO estiver mais em xeque, existe uma saída.
+						if (!testCheck) {
 
-    // =====================================
-    // COLOCAR PEÇAS NO TABULEIRO
-    // =====================================
+							// Portanto, não é xeque-mate.
+							// Basta uma jogada válida para escapar do xeque.
+							return false;
+						}
+					}
+				}
+			}
+		}
 
-    private void placeNewPiece(char column, int row, ChessPiece piece) {
+		// Se chegou até aqui, significa que:
+		// 1. O jogador estava em xeque.
+		// 2. Todas as jogadas possíveis foram testadas.
+		// 3. Nenhuma jogada conseguiu tirar o jogador do xeque.
+		// Portanto, é xeque-mate!
+		return true;
+	}
 
-        // Converte a posição do xadrez para posição da matriz.
-        // Coloca a peça no tabuleiro.
-        board.placePiece(piece, new ChessPosition(column, row).toPosition());
+	// =====================================
+	// COLOCAR PEÇAS NO TABULEIRO
+	// =====================================
 
-        // Adiciona a peça à lista de peças existentes.
-        piecesOnTheBoard.add(piece);
-    }
+	private void placeNewPiece(char column, int row, ChessPiece piece) {
 
-    // =====================================
-    // CONFIGURAÇÃO INICIAL DA PARTIDA
-    // =====================================
+		// Converte a posição do xadrez para posição da matriz.
+		// Coloca a peça no tabuleiro.
+		board.placePiece(piece, new ChessPosition(column, row).toPosition());
 
-    private void initialSetup() {
+		// Adiciona a peça à lista de peças existentes.
+		piecesOnTheBoard.add(piece);
+	}
 
-        // PEÇAS BRANCAS
-        placeNewPiece('h', 7, new Rook(board, Color.WHITE));
-        placeNewPiece('d', 1, new Rook(board, Color.WHITE));
-        placeNewPiece('e', 1, new King(board, Color.WHITE));
-       
-        placeNewPiece('b', 8, new Rook(board, Color.BLACK));
-        placeNewPiece('a', 8, new King(board, Color.BLACK));
-       
-    }
+	// =====================================
+	// CONFIGURAÇÃO INICIAL DA PARTIDA
+	// =====================================
+
+	private void initialSetup() {
+
+		// PEÇAS BRANCAS
+		placeNewPiece('h', 7, new Rook(board, Color.WHITE));
+		placeNewPiece('d', 1, new Rook(board, Color.WHITE));
+		placeNewPiece('e', 1, new King(board, Color.WHITE));
+
+		placeNewPiece('b', 8, new Rook(board, Color.BLACK));
+		placeNewPiece('a', 8, new King(board, Color.BLACK));
+
+	}
 }
