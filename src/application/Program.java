@@ -41,6 +41,13 @@ public class Program {
 				if(capturedPiece!= null) {
 					captured.add(capturedPiece);//adicionando
 				}
+				//se a partida for diferente de nulo e promovida dae digita a letra
+				if(chessMatch.getPromoted() != null) {
+					System.out.println("Enter piece for promotion (B/N/R/Q): ");
+					String type = sc.nextLine();//digita a peça
+					chessMatch.replacePromotedPiece(type);//passa o tipo chamando o replacePromotPiece
+					
+				}
 			} 
 			catch (ChessException e) {
 				System.out.println(e.getMessage());

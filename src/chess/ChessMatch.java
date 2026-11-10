@@ -1,6 +1,7 @@
 
 package chess; // Classe responsável pelas regras da partida de xadrez.
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +35,9 @@ public class ChessMatch {
 	
 	//jogada especial passante
 	private ChessPiece enPassantVulnerable;
+	
+	//jogada especial promoçao
+	private ChessPiece promoted;
 
 	// Lista de todas as peças que estão no tabuleiro.
 	private List<Piece> piecesOnTheBoard = new ArrayList<>();
@@ -77,6 +81,10 @@ public class ChessMatch {
 	//informa se existe passante
 	public ChessPiece getEnPassantVulnerable() {//ela começa com nulo nao precisa colocar no construtor
 		return enPassantVulnerable;
+	}
+	//informa se existe uma promoçao de peça
+	public ChessPiece getPromoted() {
+		return promoted;
 	}
 
 	// Retorna uma matriz contendo as peças do tabuleiro.
@@ -135,7 +143,20 @@ public class ChessMatch {
 		}
 		//metodo para fazer mover a peça q foi colocada no destino
 		ChessPiece movedPiece = (ChessPiece)board.piece(target);
-
+		
+		//metodo especial promoçao ,verefica antes do check a  peça promovida
+		promoted = null;
+		if(movedPiece instanceof Pawn){//se a peça promovida for peao
+			if ((movedPiece.getColor() == Color.WHITE && target.getRow() == 0) ||(movedPiece.getColor() == Color.BLACK && target.getRow() == 7)) {
+				promoted = (ChessPiece)board.piece(target);
+				promoted = replacePromotedPiece("Q");//padrao rainha depois troca 
+				
+			}
+		}
+			
+		
+		
+		
 		// Verifica se o adversário ficou em xeque.
 		check = (testCheck(opponent(currentPlayer))) ? true : false;
 		if (testCheckMate(opponent(currentPlayer))) {
@@ -156,7 +177,34 @@ public class ChessMatch {
 		// Retorna a peça capturada, se houver.
 		return (ChessPiece) capturedPiece;
 	}
-
+	//retorna a peça a ser promovida
+	public ChessPiece replacePromotedPiece(String type) {
+		if(promoted == null) {//proteçao do nulo
+			throw new IllegalStateException("There is no piece to be promoted");
+		}//verefica as peças proteçao quando chega no final
+		if(!type.equals("B") && !type.equals("N") && !type.equals("R")&& !type.equals("Q")) {
+			throw new InvalidParameterException("Invalid type for promotion");
+		}//remove a peça da posiçao e guarda na variavel p
+		Position pos = promoted.getChessPosition().toPosition();
+		Piece p = board.removePiece(pos);
+		//agora exclui a peça p do tabuleiro
+		piecesOnTheBoard.remove(p);
+		//declara uma variavel recebendo o nova peça com  apromoçao ecor
+		ChessPiece newPiece = newPiece(type,promoted.getColor());
+		board.placePiece(newPiece, pos);//coloca a peça na posiçao da peça promovida
+		piecesOnTheBoard.add(newPiece);//adiciona a nova peça que fez
+		
+		return newPiece;
+		
+	}
+	//metodo auxiliar para instanciar a peça pra mim
+	private ChessPiece newPiece(String type, Color color) {
+		if(type.equals("B")) return new Bishop(board, color);
+		if(type.equals("N")) return new Knigth(board, color);
+		if(type.equals("Q")) return new Queen(board, color);
+		return new Rook(board, color);
+	}
+	
 	// =====================================
 	// FAZER MOVIMENTO
 	// =====================================
