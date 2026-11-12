@@ -1,7 +1,6 @@
 
 package chess; // Classe responsável pelas regras da partida de xadrez.
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -183,7 +182,7 @@ public class ChessMatch {
 			throw new IllegalStateException("There is no piece to be promoted");
 		}//verefica as peças proteçao quando chega no final
 		if(!type.equals("B") && !type.equals("N") && !type.equals("R")&& !type.equals("Q")) {
-			throw new InvalidParameterException("Invalid type for promotion");
+			return promoted;
 		}//remove a peça da posiçao e guarda na variavel p
 		Position pos = promoted.getChessPosition().toPosition();
 		Piece p = board.removePiece(pos);
