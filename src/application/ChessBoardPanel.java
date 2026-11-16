@@ -3,10 +3,21 @@ package application;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 
-import javax.swing.JPanel;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import chess.ChessMatch;
+import chess.ChessPiece;
+import chess.pieces.Bishop;
+import chess.pieces.King;
+import chess.pieces.Knigth;
+import chess.pieces.Pawn;
+import chess.pieces.Queen;
+import chess.pieces.Rook;
 
 public class ChessBoardPanel extends JPanel {
 
@@ -15,38 +26,97 @@ public class ChessBoardPanel extends JPanel {
     private static final Color LIGHT_SQUARE = new Color(240, 217, 181);
     private static final Color DARK_SQUARE = new Color(181, 136, 99);
 
+    private JButton[][] squares = new JButton[8][8];
+
+    private ChessMatch chessMatch;
+
     public ChessBoardPanel() {
+        this(new ChessMatch());
+    }
 
-        // Cria um tabuleiro com 8 linhas e 8 colunas
+    public ChessBoardPanel(ChessMatch chessMatch) {
+
+        this.chessMatch = chessMatch;
+
         setLayout(new GridLayout(8, 8));
-
-        // Define o tamanho preferencial do tabuleiro
         setPreferredSize(new Dimension(600, 600));
 
-        // Cria as 64 casas
         for (int row = 0; row < 8; row++) {
 
             for (int col = 0; col < 8; col++) {
 
-                JPanel square = new JPanel();
+                JButton square = new JButton();
 
-                // Alterna as cores das casas
                 if ((row + col) % 2 == 0) {
                     square.setBackground(LIGHT_SQUARE);
                 } else {
                     square.setBackground(DARK_SQUARE);
                 }
 
-                // Adiciona uma borda discreta
+                square.setFont(new Font("Serif", Font.PLAIN, 42));
+                square.setFocusPainted(false);
                 square.setBorder(
                     BorderFactory.createLineBorder(
                         new Color(80, 60, 40), 1
                     )
                 );
 
-                // Adiciona a casa ao tabuleiro
+                squares[row][col] = square;
+
                 add(square);
             }
         }
+
+        updateBoard();
+    }
+
+    public void updateBoard() {
+
+        ChessPiece[][] pieces = chessMatch.getPieces();
+
+        for (int row = 0; row < 8; row++) {
+
+            for (int col = 0; col < 8; col++) {
+
+                ChessPiece piece = pieces[row][col];
+
+                if (piece == null) {
+                    squares[row][col].setText("");
+                } else {
+                    squares[row][col].setText(getPieceSymbol(piece));
+                }
+            }
+        }
+    }
+
+    private String getPieceSymbol(ChessPiece piece) {
+
+        boolean white = piece.getColor() == chess.Color.WHITE;
+
+        if (piece instanceof King) {
+            return white ? "♔" : "♚";
+        }
+
+        if (piece instanceof Queen) {
+            return white ? "♕" : "♛";
+        }
+
+        if (piece instanceof Rook) {
+            return white ? "♖" : "♜";
+        }
+
+        if (piece instanceof Bishop) {
+            return white ? "♗" : "♝";
+        }
+
+        if (piece instanceof Knigth) {
+            return white ? "♘" : "♞";
+        }
+
+        if (piece instanceof Pawn) {
+            return white ? "♙" : "♟";
+        }
+
+        return "";
     }
 }
