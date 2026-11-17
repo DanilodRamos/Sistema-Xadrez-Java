@@ -5,13 +5,17 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import chess.ChessException;
 import chess.ChessMatch;
 import chess.ChessPiece;
+import chess.ChessPosition;
 import chess.pieces.Bishop;
 import chess.pieces.King;
 import chess.pieces.Knigth;
@@ -21,98 +25,184 @@ import chess.pieces.Rook;
 
 public class ChessBoardPanel extends JPanel {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private static final Color LIGHT_SQUARE = new Color(240, 217, 181);
-	private static final Color DARK_SQUARE = new Color(181, 136, 99);
+    private static final Color LIGHT_SQUARE = new Color(240, 217, 181);
+    private static final Color DARK_SQUARE = new Color(181, 136, 99);
+    private static final Color SELECTED_SQUARE = new Color(246, 246, 105);
+    private static final Color POSSIBLE_MOVE = new Color(120, 190, 100);
 
-	private JButton[][] squares = new JButton[8][8];
+    private JButton[][] squares = new JButton[8][8];
 
-	private ChessMatch chessMatch;
+    private ChessMatch chessMatch;
 
-	public ChessBoardPanel() {
-		this(new ChessMatch());
-	}
+    private ChessPosition selectedPosition;
+    private boolean[][] possibleMoves;
 
-	public ChessBoardPanel(ChessMatch chessMatch) {
+    public ChessBoardPanel() {
+        this(new ChessMatch());
+    }
 
-		this.chessMatch = chessMatch;
+    public ChessBoardPanel(ChessMatch chessMatch) {
 
-		setLayout(new GridLayout(8, 8));
-		setPreferredSize(new Dimension(600, 600));
+        this.chessMatch = chessMatch;
 
-		for (int row = 0; row < 8; row++) {
+        setLayout(new GridLayout(8, 8));
+        setPreferredSize(new Dimension(600, 600));
 
-			for (int col = 0; col < 8; col++) {
+        for (int row = 0; row < 8; row++) {
 
-				JButton square = new JButton();
+            for (int col = 0; col < 8; col++) {
 
-				if ((row + col) % 2 == 0) {
-					square.setBackground(LIGHT_SQUARE);
-				} else {
-					square.setBackground(DARK_SQUARE);
-				}
+                JButton square = new JButton();
 
-				square.setFont(new Font("Serif", Font.PLAIN, 42));
-				square.setFocusPainted(false);
-				square.setBorder(BorderFactory.createLineBorder(new Color(80, 60, 40), 1));
+                square.setBackground(getSquareColor(row, col));
+                square.setFont(new Font("Serif", Font.PLAIN, 42));
+                square.setFocusPainted(false);
+                square.setBorder(BorderFactory.createLineBorder(
+                    new Color(80, 60, 40), 1
+                ));
 
-				squares[row][col] = square;
+                final int selectedRow = row;
+                final int selectedCol = col;
 
-				add(square);
-			}
-		}
+                square.addActionListener((ActionEvent e) -> {
+                    handleSquareClick(selectedRow, selectedCol);
+                });
 
-		updateBoard();
-	}
+                squares[row][col] = square;
 
-	public void updateBoard() {
+                add(square);
+            }
+        }
 
-		ChessPiece[][] pieces = chessMatch.getPieces();
+        updateBoard();
+    }
 
-		for (int row = 0; row < 8; row++) {
+    private Color getSquareColor(int row, int col) {
 
-			for (int col = 0; col < 8; col++) {
+        if ((row + col) % 2 == 0) {
+            return LIGHT_SQUARE;
+        }
 
-				ChessPiece piece = pieces[row][col];
+        return DARK_SQUARE;
+    }
 
-				if (piece == null) {
-					squares[row][col].setText("");
-				} else {
-					squares[row][col].setText(getPieceSymbol(piece));
-				}
-			}
-		}
-	}
+    private void handleSquareClick(int row, int col) {
 
-	private String getPieceSymbol(ChessPiece piece) {
+        ChessPosition clickedPosition =
+            new ChessPosition((char) ('a' + col), 8 - row);
 
-		boolean white = piece.getColor() == chess.Color.WHITE;
+        // Se já existe uma peça selecionada, tenta movimentá-la.
+        if (selectedPosition != null && possibleMoves[row][col]) {
 
-		if (piece instanceof King) {
-			return white ? "♔" : "♚";
-		}
+            try {
 
-		if (piece instanceof Queen) {
-			return white ? "♕" : "♛";
-		}
+                chessMatch.performChessMove(selectedPosition, clickedPosition);
 
-		if (piece instanceof Rook) {
-			return white ? "♖" : "♜";
-		}
+                selectedPosition = null;
+                possibleMoves = null;
 
-		if (piece instanceof Bishop) {
-			return white ? "♗" : "♝";
-		}
+                updateBoard();
 
-		if (piece instanceof Knigth) {
-			return white ? "♘" : "♞";
-		}
+            } catch (ChessException | IllegalStateException e) {
 
-		if (piece instanceof Pawn) {
-			return white ? "♙" : "♟";
-		}
+                JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Movimento inválido",
+                    JOptionPane.WARNING_MESSAGE
+                );
 
-		return "";
-	}
+                selectedPosition = null;
+                possibleMoves = null;
+
+                updateBoard();
+            }
+
+            return;
+        }
+
+        // Tenta selecionar uma peça.
+        try {
+
+            possibleMoves = chessMatch.possibleMoves(clickedPosition);
+
+            selectedPosition = clickedPosition;
+
+            updateBoard();
+
+        } catch (ChessException | IllegalStateException e) {
+
+            selectedPosition = null;
+            possibleMoves = null;
+
+            updateBoard();
+        }
+    }
+
+    public void updateBoard() {
+
+        ChessPiece[][] pieces = chessMatch.getPieces();
+
+        for (int row = 0; row < 8; row++) {
+
+            for (int col = 0; col < 8; col++) {
+
+                ChessPiece piece = pieces[row][col];
+
+                if (piece == null) {
+                    squares[row][col].setText("");
+                } else {
+                    squares[row][col].setText(getPieceSymbol(piece));
+                }
+
+                squares[row][col].setBackground(getSquareColor(row, col));
+
+                if (possibleMoves != null && possibleMoves[row][col]) {
+                    squares[row][col].setBackground(POSSIBLE_MOVE);
+                }
+            }
+        }
+
+        // Destaca a peça selecionada.
+        if (selectedPosition != null) {
+
+            int row = 8 - selectedPosition.getRow();
+            int col = selectedPosition.getColumn() - 'a';
+
+            squares[row][col].setBackground(SELECTED_SQUARE);
+        }
+    }
+
+    private String getPieceSymbol(ChessPiece piece) {
+
+        boolean white = piece.getColor() == chess.Color.WHITE;
+
+        if (piece instanceof King) {
+            return white ? "♔" : "♚";
+        }
+
+        if (piece instanceof Queen) {
+            return white ? "♕" : "♛";
+        }
+
+        if (piece instanceof Rook) {
+            return white ? "♖" : "♜";
+        }
+
+        if (piece instanceof Bishop) {
+            return white ? "♗" : "♝";
+        }
+
+        if (piece instanceof Knigth) {
+            return white ? "♘" : "♞";
+        }
+
+        if (piece instanceof Pawn) {
+            return white ? "♙" : "♟";
+        }
+
+        return "";
+    }
 }
