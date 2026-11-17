@@ -1,6 +1,9 @@
 
 package application;
+import java.awt.Image;
+import java.net.URL;
 
+import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -25,184 +28,193 @@ import chess.pieces.Rook;
 
 public class ChessBoardPanel extends JPanel {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private static final Color LIGHT_SQUARE = new Color(240, 217, 181);
-    private static final Color DARK_SQUARE = new Color(181, 136, 99);
-    private static final Color SELECTED_SQUARE = new Color(246, 246, 105);
-    private static final Color POSSIBLE_MOVE = new Color(120, 190, 100);
+	private static final Color LIGHT_SQUARE = new Color(240, 217, 181);
+	private static final Color DARK_SQUARE = new Color(181, 136, 99);
+	private static final Color SELECTED_SQUARE = new Color(246, 246, 105);
+	private static final Color POSSIBLE_MOVE = new Color(120, 190, 100);
 
-    private JButton[][] squares = new JButton[8][8];
+	private JButton[][] squares = new JButton[8][8];
 
-    private ChessMatch chessMatch;
+	private ChessMatch chessMatch;
+	private ImageIcon lulaKingIcon;
+	private ChessPosition selectedPosition;
+	private boolean[][] possibleMoves;
 
-    private ChessPosition selectedPosition;
-    private boolean[][] possibleMoves;
+	public ChessBoardPanel() {
+		this(new ChessMatch());
+	}
 
-    public ChessBoardPanel() {
-        this(new ChessMatch());
-    }
+	public ChessBoardPanel(ChessMatch chessMatch) {
 
-    public ChessBoardPanel(ChessMatch chessMatch) {
+		this.chessMatch = chessMatch;
+		URL imageURL = getClass().getResource("/images/rei-lula.png");
 
-        this.chessMatch = chessMatch;
+		if (imageURL != null) {
+		    ImageIcon originalIcon = new ImageIcon(imageURL);
 
-        setLayout(new GridLayout(8, 8));
-        setPreferredSize(new Dimension(600, 600));
+		    Image scaledImage = originalIcon.getImage().getScaledInstance(
+		        80, 80, Image.SCALE_SMOOTH
+		    );
 
-        for (int row = 0; row < 8; row++) {
+		    lulaKingIcon = new ImageIcon(scaledImage);
+		}
 
-            for (int col = 0; col < 8; col++) {
+		setLayout(new GridLayout(8, 8));
+		setPreferredSize(new Dimension(600, 600));
 
-                JButton square = new JButton();
+		for (int row = 0; row < 8; row++) {
 
-                square.setBackground(getSquareColor(row, col));
-                square.setFont(new Font("Serif", Font.PLAIN, 42));
-                square.setFocusPainted(false);
-                square.setBorder(BorderFactory.createLineBorder(
-                    new Color(80, 60, 40), 1
-                ));
+			for (int col = 0; col < 8; col++) {
 
-                final int selectedRow = row;
-                final int selectedCol = col;
+				JButton square = new JButton();
 
-                square.addActionListener((ActionEvent e) -> {
-                    handleSquareClick(selectedRow, selectedCol);
-                });
+				square.setBackground(getSquareColor(row, col));
+				square.setFont(new Font("Serif", Font.PLAIN, 42));
+				square.setFocusPainted(false);
+				square.setBorder(BorderFactory.createLineBorder(new Color(80, 60, 40), 1));
 
-                squares[row][col] = square;
+				final int selectedRow = row;
+				final int selectedCol = col;
 
-                add(square);
-            }
-        }
+				square.addActionListener((ActionEvent e) -> {
+					handleSquareClick(selectedRow, selectedCol);
+				});
 
-        updateBoard();
-    }
+				squares[row][col] = square;
 
-    private Color getSquareColor(int row, int col) {
+				add(square);
+			}
+		}
 
-        if ((row + col) % 2 == 0) {
-            return LIGHT_SQUARE;
-        }
+		updateBoard();
+	}
 
-        return DARK_SQUARE;
-    }
+	private Color getSquareColor(int row, int col) {
 
-    private void handleSquareClick(int row, int col) {
+		if ((row + col) % 2 == 0) {
+			return LIGHT_SQUARE;
+		}
 
-        ChessPosition clickedPosition =
-            new ChessPosition((char) ('a' + col), 8 - row);
+		return DARK_SQUARE;
+	}
 
-        // Se já existe uma peça selecionada, tenta movimentá-la.
-        if (selectedPosition != null && possibleMoves[row][col]) {
+	private void handleSquareClick(int row, int col) {
 
-            try {
+		ChessPosition clickedPosition = new ChessPosition((char) ('a' + col), 8 - row);
 
-                chessMatch.performChessMove(selectedPosition, clickedPosition);
+		// Se já existe uma peça selecionada, tenta movimentá-la.
+		if (selectedPosition != null && possibleMoves[row][col]) {
 
-                selectedPosition = null;
-                possibleMoves = null;
+			try {
 
-                updateBoard();
+				chessMatch.performChessMove(selectedPosition, clickedPosition);
 
-            } catch (ChessException | IllegalStateException e) {
+				selectedPosition = null;
+				possibleMoves = null;
 
-                JOptionPane.showMessageDialog(
-                    this,
-                    e.getMessage(),
-                    "Movimento inválido",
-                    JOptionPane.WARNING_MESSAGE
-                );
+				updateBoard();
 
-                selectedPosition = null;
-                possibleMoves = null;
+			} catch (ChessException | IllegalStateException e) {
 
-                updateBoard();
-            }
+				JOptionPane.showMessageDialog(this, e.getMessage(), "Movimento inválido", JOptionPane.WARNING_MESSAGE);
 
-            return;
-        }
+				selectedPosition = null;
+				possibleMoves = null;
 
-        // Tenta selecionar uma peça.
-        try {
+				updateBoard();
+			}
 
-            possibleMoves = chessMatch.possibleMoves(clickedPosition);
+			return;
+		}
 
-            selectedPosition = clickedPosition;
+		// Tenta selecionar uma peça.
+		try {
 
-            updateBoard();
+			possibleMoves = chessMatch.possibleMoves(clickedPosition);
 
-        } catch (ChessException | IllegalStateException e) {
+			selectedPosition = clickedPosition;
 
-            selectedPosition = null;
-            possibleMoves = null;
+			updateBoard();
 
-            updateBoard();
-        }
-    }
+		} catch (ChessException | IllegalStateException e) {
 
-    public void updateBoard() {
+			selectedPosition = null;
+			possibleMoves = null;
 
-        ChessPiece[][] pieces = chessMatch.getPieces();
+			updateBoard();
+		}
+	}
 
-        for (int row = 0; row < 8; row++) {
+	public void updateBoard() {
 
-            for (int col = 0; col < 8; col++) {
+		ChessPiece[][] pieces = chessMatch.getPieces();
 
-                ChessPiece piece = pieces[row][col];
+		for (int row = 0; row < 8; row++) {
 
-                if (piece == null) {
-                    squares[row][col].setText("");
-                } else {
-                    squares[row][col].setText(getPieceSymbol(piece));
-                }
+			for (int col = 0; col < 8; col++) {
 
-                squares[row][col].setBackground(getSquareColor(row, col));
+				ChessPiece piece = pieces[row][col];
 
-                if (possibleMoves != null && possibleMoves[row][col]) {
-                    squares[row][col].setBackground(POSSIBLE_MOVE);
-                }
-            }
-        }
+				if (piece == null) {
 
-        // Destaca a peça selecionada.
-        if (selectedPosition != null) {
+				    squares[row][col].setText("");
+				    squares[row][col].setIcon(null);
 
-            int row = 8 - selectedPosition.getRow();
-            int col = selectedPosition.getColumn() - 'a';
+				} else if (piece instanceof King
+				        && piece.getColor() == chess.Color.WHITE
+				        && lulaKingIcon != null) {
 
-            squares[row][col].setBackground(SELECTED_SQUARE);
-        }
-    }
+				    squares[row][col].setText("");
+				    squares[row][col].setIcon(lulaKingIcon);
 
-    private String getPieceSymbol(ChessPiece piece) {
+				} else {
 
-        boolean white = piece.getColor() == chess.Color.WHITE;
+				    squares[row][col].setIcon(null);
+				    squares[row][col].setText(getPieceSymbol(piece));
+				}
+			}
+		}
 
-        if (piece instanceof King) {
-            return white ? "♔" : "♚";
-        }
+		// Destaca a peça selecionada.
+		if (selectedPosition != null) {
 
-        if (piece instanceof Queen) {
-            return white ? "♕" : "♛";
-        }
+			int row = 8 - selectedPosition.getRow();
+			int col = selectedPosition.getColumn() - 'a';
 
-        if (piece instanceof Rook) {
-            return white ? "♖" : "♜";
-        }
+			squares[row][col].setBackground(SELECTED_SQUARE);
+		}
+	}
 
-        if (piece instanceof Bishop) {
-            return white ? "♗" : "♝";
-        }
+	private String getPieceSymbol(ChessPiece piece) {
 
-        if (piece instanceof Knigth) {
-            return white ? "♘" : "♞";
-        }
+		boolean white = piece.getColor() == chess.Color.WHITE;
 
-        if (piece instanceof Pawn) {
-            return white ? "♙" : "♟";
-        }
+		if (piece instanceof King) {
+			return white ? "♔" : "♚";
+		}
 
-        return "";
-    }
+		if (piece instanceof Queen) {
+			return white ? "♕" : "♛";
+		}
+
+		if (piece instanceof Rook) {
+			return white ? "♖" : "♜";
+		}
+
+		if (piece instanceof Bishop) {
+			return white ? "♗" : "♝";
+		}
+
+		if (piece instanceof Knigth) {
+			return white ? "♘" : "♞";
+		}
+
+		if (piece instanceof Pawn) {
+			return white ? "♙" : "♟";
+		}
+
+		return "";
+	}
 }
