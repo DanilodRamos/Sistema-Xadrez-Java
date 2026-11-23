@@ -1,16 +1,16 @@
 
 package application;
-import java.awt.Image;
-import java.net.URL;
 
-import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -39,6 +39,7 @@ public class ChessBoardPanel extends JPanel {
 
 	private ChessMatch chessMatch;
 	private ImageIcon lulaKingIcon;
+	private ImageIcon bolsonaroKingIcon;
 	private ChessPosition selectedPosition;
 	private boolean[][] possibleMoves;
 
@@ -52,15 +53,23 @@ public class ChessBoardPanel extends JPanel {
 		URL imageURL = getClass().getResource("/images/rei-lula.png");
 
 		if (imageURL != null) {
-		    ImageIcon originalIcon = new ImageIcon(imageURL);
+			ImageIcon originalIcon = new ImageIcon(imageURL);
 
-		    Image scaledImage = originalIcon.getImage().getScaledInstance(
-		        80, 80, Image.SCALE_SMOOTH
-		    );
+			Image scaledImage = originalIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
 
-		    lulaKingIcon = new ImageIcon(scaledImage);
+			lulaKingIcon = new ImageIcon(scaledImage);
 		}
 
+		// Carrega a imagem do Rei Bolsonaro
+		URL bolsonaroURL = getClass().getResource("/images/rei-bolsonaro.png");
+
+		if (bolsonaroURL != null) {
+			ImageIcon originalIcon = new ImageIcon(bolsonaroURL);
+
+			Image scaledImage = originalIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+
+			bolsonaroKingIcon = new ImageIcon(scaledImage);
+		}
 		setLayout(new GridLayout(8, 8));
 		setPreferredSize(new Dimension(600, 600));
 
@@ -147,44 +156,73 @@ public class ChessBoardPanel extends JPanel {
 		}
 	}
 
-	public void updateBoard() {
 
-		ChessPiece[][] pieces = chessMatch.getPieces();
+public void updateBoard() {
 
-		for (int row = 0; row < 8; row++) {
+    ChessPiece[][] pieces = chessMatch.getPieces();
 
-			for (int col = 0; col < 8; col++) {
+    for (int row = 0; row < 8; row++) {
 
-				ChessPiece piece = pieces[row][col];
+        for (int col = 0; col < 8; col++) {
 
-				if (piece == null) {
+            ChessPiece piece = pieces[row][col];
 
-				    squares[row][col].setText("");
-				    squares[row][col].setIcon(null);
+            // Restaura a cor original da casa
+            squares[row][col].setBackground(getSquareColor(row, col));
 
-				} else if (piece instanceof King
-				        && piece.getColor() == chess.Color.WHITE
-				        && lulaKingIcon != null) {
+            if (piece == null) {
+                squares[row][col].setText("");
+                squares[row][col].setIcon(null);
 
-				    squares[row][col].setText("");
-				    squares[row][col].setIcon(lulaKingIcon);
+            } else if (piece instanceof King
+                    && piece.getColor() == chess.Color.WHITE
+                    && lulaKingIcon != null) {
 
-				} else {
+                // Exibe o Rei Lula
+                squares[row][col].setText("");
+                squares[row][col].setIcon(lulaKingIcon);
 
-				    squares[row][col].setIcon(null);
-				    squares[row][col].setText(getPieceSymbol(piece));
-				}
-			}
-		}
+            } else if (piece instanceof King
+                    && piece.getColor() == chess.Color.BLACK
+                    && bolsonaroKingIcon != null) {
 
-		// Destaca a peça selecionada.
-		if (selectedPosition != null) {
+                // Exibe o Rei Bolsonaro
+                squares[row][col].setText("");
+                squares[row][col].setIcon(bolsonaroKingIcon);
 
-			int row = 8 - selectedPosition.getRow();
-			int col = selectedPosition.getColumn() - 'a';
+            } else {
 
-			squares[row][col].setBackground(SELECTED_SQUARE);
-		}
+                squares[row][col].setIcon(null);
+                squares[row][col].setText(getPieceSymbol(piece));
+            }
+
+            // Destaca os movimentos possíveis
+            if (possibleMoves != null && possibleMoves[row][col]) {
+                squares[row][col].setBackground(POSSIBLE_MOVE);
+            }
+
+            // Destaca a peça selecionada
+            if (selectedPosition != null
+                    && 8 - selectedPosition.getRow() == row
+                    && selectedPosition.getColumn() - 'a' == col) {
+
+                squares[row][col].setBackground(SELECTED_SQUARE);
+            }
+        }
+    }
+
+
+	
+	// Destaca a peça selecionada.
+	if(selectedPosition!=null)
+
+	{
+
+		int row = 8 - selectedPosition.getRow();
+		int col = selectedPosition.getColumn() - 'a';
+
+		squares[row][col].setBackground(SELECTED_SQUARE);
+	}
 	}
 
 	private String getPieceSymbol(ChessPiece piece) {
