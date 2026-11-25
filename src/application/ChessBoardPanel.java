@@ -40,6 +40,7 @@ public class ChessBoardPanel extends JPanel {
 	private ChessMatch chessMatch;
 	private ImageIcon lulaKingIcon;
 	private ImageIcon bolsonaroKingIcon;
+	private ImageIcon janjaQueenIcon;
 	private ChessPosition selectedPosition;
 	private boolean[][] possibleMoves;
 
@@ -70,6 +71,19 @@ public class ChessBoardPanel extends JPanel {
 
 			bolsonaroKingIcon = new ImageIcon(scaledImage);
 		}
+		// Carrega a imagem da Rainha Janja
+		URL janjaURL = getClass().getResource("/images/rainha-janja.png");
+
+		if (janjaURL != null) {
+			ImageIcon originalIcon = new ImageIcon(janjaURL);
+
+			Image scaledImage = originalIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+
+			janjaQueenIcon = new ImageIcon(scaledImage);
+		}
+
+		setLayout(new GridLayout(8, 8));
+
 		setLayout(new GridLayout(8, 8));
 		setPreferredSize(new Dimension(600, 600));
 
@@ -156,73 +170,72 @@ public class ChessBoardPanel extends JPanel {
 		}
 	}
 
+	public void updateBoard() {
 
-public void updateBoard() {
+		ChessPiece[][] pieces = chessMatch.getPieces();
 
-    ChessPiece[][] pieces = chessMatch.getPieces();
+		for (int row = 0; row < 8; row++) {
 
-    for (int row = 0; row < 8; row++) {
+			for (int col = 0; col < 8; col++) {
 
-        for (int col = 0; col < 8; col++) {
+				ChessPiece piece = pieces[row][col];
 
-            ChessPiece piece = pieces[row][col];
+				// Restaura a cor original da casa
+				squares[row][col].setBackground(getSquareColor(row, col));
 
-            // Restaura a cor original da casa
-            squares[row][col].setBackground(getSquareColor(row, col));
+				if (piece == null) {
+					squares[row][col].setText("");
+					squares[row][col].setIcon(null);
 
-            if (piece == null) {
-                squares[row][col].setText("");
-                squares[row][col].setIcon(null);
+				} else if (piece instanceof King && piece.getColor() == chess.Color.WHITE && lulaKingIcon != null) {
 
-            } else if (piece instanceof King
-                    && piece.getColor() == chess.Color.WHITE
-                    && lulaKingIcon != null) {
+					// Exibe o Rei Lula
+					squares[row][col].setText("");
+					squares[row][col].setIcon(lulaKingIcon);
 
-                // Exibe o Rei Lula
-                squares[row][col].setText("");
-                squares[row][col].setIcon(lulaKingIcon);
+				} else if (piece instanceof King && piece.getColor() == chess.Color.BLACK
+						&& bolsonaroKingIcon != null) {
 
-            } else if (piece instanceof King
-                    && piece.getColor() == chess.Color.BLACK
-                    && bolsonaroKingIcon != null) {
+					// Exibe o Rei Bolsonaro
+					squares[row][col].setText("");
+					squares[row][col].setIcon(bolsonaroKingIcon);
 
-                // Exibe o Rei Bolsonaro
-                squares[row][col].setText("");
-                squares[row][col].setIcon(bolsonaroKingIcon);
+				} else if (piece instanceof Queen && piece.getColor() == chess.Color.WHITE && janjaQueenIcon != null) {
 
-            } else {
+					// Exibe a Rainha Janja
+					squares[row][col].setText("");
+					squares[row][col].setIcon(janjaQueenIcon);
 
-                squares[row][col].setIcon(null);
-                squares[row][col].setText(getPieceSymbol(piece));
-            }
+				} else {
 
-            // Destaca os movimentos possíveis
-            if (possibleMoves != null && possibleMoves[row][col]) {
-                squares[row][col].setBackground(POSSIBLE_MOVE);
-            }
+					squares[row][col].setIcon(null);
+					squares[row][col].setText(getPieceSymbol(piece));
 
-            // Destaca a peça selecionada
-            if (selectedPosition != null
-                    && 8 - selectedPosition.getRow() == row
-                    && selectedPosition.getColumn() - 'a' == col) {
+				}
+				// Destaca os movimentos possíveis
+				if (possibleMoves != null && possibleMoves[row][col]) {
+					squares[row][col].setBackground(POSSIBLE_MOVE);
+				}
 
-                squares[row][col].setBackground(SELECTED_SQUARE);
-            }
-        }
-    }
+				// Destaca a peça selecionada
+				if (selectedPosition != null && 8 - selectedPosition.getRow() == row
+						&& selectedPosition.getColumn() - 'a' == col) {
 
+					squares[row][col].setBackground(SELECTED_SQUARE);
+				}
+			}
+		}
 
-	
-	// Destaca a peça selecionada.
-	if(selectedPosition!=null)
+		// Destaca a peça selecionada.
+		if (selectedPosition != null)
 
-	{
+		{
 
-		int row = 8 - selectedPosition.getRow();
-		int col = selectedPosition.getColumn() - 'a';
+			int row = 8 - selectedPosition.getRow();
+			int col = selectedPosition.getColumn() - 'a';
 
-		squares[row][col].setBackground(SELECTED_SQUARE);
-	}
+			squares[row][col].setBackground(SELECTED_SQUARE);
+		}
 	}
 
 	private String getPieceSymbol(ChessPiece piece) {
